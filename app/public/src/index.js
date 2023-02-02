@@ -1,0 +1,1 @@
+let boardController = new BoardController();

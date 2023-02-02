@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
+</head>
+
+<body>
+
+    <main>
+
+        <h1> Kanban Board</h1>
+        <!--
+           (づ ◕‿◕ )づ
+        -->
+
+        <section class='columns'>
+
+            <div class="column" id="column1">
+                <h2 class="to-do">To-do</h2>
+                <button type="button" class="add-btn">+</button>
+            </div>
+
+            <div class="column" id="column2">
+                <h2 class="progress">In Progress</h2>
+                <button type="button" class="add-btn">+</button>
+            </div>
+
+            <div class="column" id="column3">
+                <h2 class="blocked">Blocked</h2>
+                <button type="button" class="add-btn">+</button>
+            </div>
+
+            <div class="column" id="column4">
+                <h2 class="completed">Completed</h2>
+                <button type="button" class="add-btn">+</button>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="../src/classes/Utils.js"> </script>
+    <script src="../src/classes/HttpRequest.js"> </script>
+    <script src="../src/models/Card.js"></script>
+    <script src="../src/controllers/BoardController.js"> </script>
+    <script src="../src/index.js"> </script>
+
+</body>
+
+</html>
