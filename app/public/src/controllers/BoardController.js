@@ -59,11 +59,11 @@ class BoardController {
         column.appendChild(card);
 
         let titleArea = document.querySelector(`#column${cardObj.column} > #${card.id} > textarea[id^='text-title']`);
-        let descriptionArea = document.querySelector(`#column${cardObj.column} > #${card.id} > textarea`);
+        let descriptionArea = document.querySelector(`#column${cardObj.column} > #${card.id} > textarea[id^='text-description']`);
 
         this.addCardEvents(card, cardObj, titleArea, descriptionArea);
 
-        this.initDragEvent(card);
+        this.initDragEvent(card, cardObj);
     }
 
 
@@ -112,9 +112,12 @@ class BoardController {
 
         card.innerHTML =
             `        
-        <i class="fa-regular fa-trash-can" id="delete-btn"></i>
-        <i class="fa-solid fa-pen-to-square" id="edit-btn"></i>
+        <i class="fa-regular fa-trash-can" id="delete-btn" style="display:none" ></i>
+
+        <i class="fa-solid fa-pen-to-square" id="edit-btn"  style="display:none" ></i>
+
         <i class="fa-solid fa-floppy-disk" id="save-btn"></i>
+
         <i class="fa-regular fa-floppy-disk" id="onedit-btn" style="display:none"></i>
 
         <textarea name="text" id="text-title"
@@ -128,39 +131,24 @@ class BoardController {
 
         this.onEnter(card, column);
 
-        this.emptyCardEvent(card);
-
         this.saveNewTask(card, column.id, color);
 
-        this.initDragEvent(card);
-
     }
 
-    emptyCardEvent(card) {
-
-        const editBtn = card.querySelector('#edit-btn');
-
-        const deleteBtn = card.querySelector('#delete-btn');
-
-        editBtn.addEventListener('click', event => {
-            window.alert('Please, save card before editing!');
-        });
-
-        deleteBtn.addEventListener('click', event => {
-            window.alert('Please, save card before deleting!');
-        });
-
-    }
 
     onEnter(card, column) {
 
+        console.log(card)
+
         let textDescriptionArea = document.querySelector(`#${column.id} > #${card.id} > textarea[id^='text-description'] `);
+
+        console.log(textDescriptionArea) //here
 
         card.addEventListener('keydown', event => {
 
             if (event.key === "Enter") {
 
-                console.log('enter!')
+                console.log('enter!');
                 textDescriptionArea.focus();
 
             };
@@ -193,7 +181,12 @@ class BoardController {
                     saveBtn.style.display = 'none';
 
                     this.addCardEvents(card, dataCard, titleArea, descriptionArea);
+                    this.initDragEvent(card, dataCard);
                 });
+
+                this.showButtons(card);
+
+
 
             } else {
                 window.alert('Please, insert a title and a description for your task! ');
@@ -202,14 +195,17 @@ class BoardController {
         });
     }
 
+    showButtons(card) {
+        card.querySelector('#delete-btn').style.display = 'block';
+        card.querySelector('#edit-btn').style.display = 'block';
+    }
+
     //edit and delete 
     addCardEvents(card, cardObj, titleArea, descriptionArea) {
 
         const onEditBtn = card.querySelector('#onedit-btn');
 
         card.querySelector('#delete-btn').addEventListener('click', e => {
-
-            console.log('delete! ');
 
             if (confirm('Would you like to delete this card? ')) {
 
@@ -226,9 +222,9 @@ class BoardController {
 
             console.log('edit! ');
 
-            onEditBtn.style.display = 'block';
-
             this.disableTextArea(titleArea, descriptionArea, false);
+
+            onEditBtn.style.display = 'block';
 
             onEditBtn.addEventListener('click', e => {
 
@@ -245,7 +241,7 @@ class BoardController {
     }
 
 
-    initDragEvent(card) {
+    initDragEvent(card, cardObj) {
 
         const dropzones = document.querySelectorAll('.column')
 
@@ -260,7 +256,6 @@ class BoardController {
 
         card.addEventListener('dragover', (e) => {
             e.preventDefault();
-
         });
 
         card.addEventListener('dragend', e => {
@@ -271,6 +266,9 @@ class BoardController {
                 dropzone.classList.remove('highlight');
 
             });
+
+            const column = card.parentNode;
+            this.changeColumn(card, column, cardObj);
 
         });
 
@@ -289,15 +287,34 @@ class BoardController {
             dropzone.addEventListener('dragleave', e => {
 
                 dropzone.classList.remove('over');
+
             });
 
             dropzone.addEventListener('drop', e => {
 
                 card.classList.remove('is-dragging');
+
                 dropzone.classList.remove('over');
+
+
+
             });
 
         })
+
+    }
+
+    changeColumn(card, column, cardObj) {
+
+        var index = Array.prototype.indexOf.call(column.children, card);
+        //console.log(column.children)
+
+        let columnNumber = column.id.replace('column', '');
+
+        cardObj.changeColumn(columnNumber, index).then(
+            console.log('Card sucessfully moved to another column or position!')
+        );
+
 
     }
 

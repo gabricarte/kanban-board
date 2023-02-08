@@ -42,7 +42,6 @@ h2 {
 .card {
     display: inline-block;
     text-align: center;
-    min-height: 80px;
     font-size: 15px;
     padding: 10px;
     border-radius: 8px;
@@ -165,7 +164,7 @@ button {
     transition: 0.8s;
     font-size: 20px;
     border: none;
-    min-width: 50%;     
+    min-width: 50%;
 }
 
 button:hover {

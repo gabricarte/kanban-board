@@ -53,7 +53,7 @@ class Card {
 
     }
 
-    //save the card on the restful api 
+    //save the card on the api 
     save() {
 
         return new Promise((resolve, reject) => {
@@ -87,5 +87,13 @@ class Card {
         return HttpRequest.put(`/cards/${this._id}`, this.toJSON());
     }
 
+    changeColumn(column, position) {
+
+        this._column = column;
+        this._position = position;
+
+        return HttpRequest.put(`/cards/${this._id}`, this.toJSON());
+
+    }
 
 }
