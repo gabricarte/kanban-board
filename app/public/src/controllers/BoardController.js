@@ -5,6 +5,12 @@ class BoardController {
         this.selectAll();
         this.addTask();
 
+        //array for each column, containing the instanced objects 
+        this.firstColumn = [];
+        this.secondColumn = [];
+        this.thirdColumn = [];
+        this.fourthColumn = [];
+
     }
 
     //search all saved cards from the client server
@@ -15,57 +21,89 @@ class BoardController {
             //data is an object with an array of objects (cards)
             data.cards.sort((a, b) => (a._position > b._position) ? 1 : ((b._position > a._position) ? -1 : 0)); //ordering card by position
 
+            console.log(data.cards);
+
             data.cards.forEach(dataCard => {
+
                 let card = new Card();
                 card.loadFromJSON(dataCard);
-                this.insertSavedTask(card);
+                this.pushToColumnArray(card);
 
             });
+
+            this.insertSavedTask(this.firstColumn);
+            this.insertSavedTask(this.secondColumn);
+            this.insertSavedTask(this.thirdColumn);
+            this.insertSavedTask(this.fourthColumn);
+
+
+        });
+
+
+    }
+
+    pushToColumnArray(cardObj) {
+
+        switch (cardObj._column) {
+            case '1':
+                this.firstColumn.push(cardObj);
+                break;
+            case '2':
+                this.secondColumn.push(cardObj);
+                break;
+            case '3':
+                this.thirdColumn.push(cardObj);
+                break;
+            case '4':
+                this.fourthColumn.push(cardObj);
+                break;
+        }
+
+    }
+
+    insertSavedTask(columnArray) {
+
+        columnArray.forEach(dataCard => {
+
+            const card = document.createElement('div');
+
+            card.className = 'card';
+
+            let color = dataCard.color;
+
+            card.style.backgroundColor = color;
+
+            card.setAttribute('draggable', true);
+
+            card.innerHTML =
+                `        
+            <i class="fa-regular fa-trash-can" id="delete-btn"></i>
+            <i class="fa-solid fa-pen-to-square" id="edit-btn"></i>
+            <i class="fa-solid fa-floppy-disk" id="save-btn" style="display:none"></i>
+            <i class="fa-regular fa-floppy-disk" id="onedit-btn" style="display:none"></i>
+    
+            <textarea name="text" id="text-title"  disabled
+                oninput="this.style.height = ''; this.style.height = this.scrollHeight +'px'">${dataCard.title}</textarea>
+    
+            <textarea  name="text" id="text-description" disabled
+                oninput="this.style.height = ''; this.style.height = this.scrollHeight +'px'">${dataCard.description}</textarea>
+    
+            `
+
+            let column = document.querySelector(`.columns > #column${dataCard.column}`);
+
+            let titleArea = card.querySelector(` textarea[id ^= 'text-title']`);
+            let descriptionArea = card.querySelector(`textarea[id ^= 'text-description']`);
+
+            column.appendChild(card);
+
+            this.addCardEvents(card, dataCard, titleArea, descriptionArea);
+
+            this.initDragEvent(card, dataCard);
+
         });
 
     }
-
-    insertSavedTask(cardObj) {
-
-        const card = document.createElement('div');
-
-        card.id = `card${cardObj.position}`;
-
-        card.className = 'card';
-
-        let color = cardObj.color;
-
-        card.style.backgroundColor = color;
-
-        card.setAttribute('draggable', true);
-
-        card.innerHTML =
-            `        
-        <i class="fa-regular fa-trash-can" id="delete-btn"></i>
-        <i class="fa-solid fa-pen-to-square" id="edit-btn"></i>
-        <i class="fa-solid fa-floppy-disk" id="save-btn" style="display:none"></i>
-        <i class="fa-regular fa-floppy-disk" id="onedit-btn" style="display:none"></i>
-
-        <textarea name="text" id="text-title"  disabled
-            oninput="this.style.height = ''; this.style.height = this.scrollHeight +'px'">${cardObj.title}</textarea>
-
-        <textarea  name="text" id="text-description" disabled
-            oninput="this.style.height = ''; this.style.height = this.scrollHeight +'px'">${cardObj.description}</textarea>
-
-        `
-
-        let column = document.querySelector(`.columns > #column${cardObj.column}`);
-
-        column.appendChild(card);
-
-        let titleArea = document.querySelector(`#column${cardObj.column} > #${card.id} > textarea[id^='text-title']`);
-        let descriptionArea = document.querySelector(`#column${cardObj.column} > #${card.id} > textarea[id^='text-description']`);
-
-        this.addCardEvents(card, cardObj, titleArea, descriptionArea);
-
-        this.initDragEvent(card, cardObj);
-    }
-
 
     addTask() {
 
@@ -85,22 +123,16 @@ class BoardController {
 
         btn.addEventListener(event, e => {
 
-            let cardCount = document.querySelectorAll(` #${column.id} > div[id^='card']`).length;
-            // card's position
-            //counts the number of cards on the column, starting with 0 
-
-            this.insertNewTask(column, cardCount);
+            this.insertNewTask(column);
 
         });
 
     }
 
 
-    insertNewTask(column, cardCount) {
+    insertNewTask(column) {
 
         const card = document.createElement('div');
-
-        card.id = `card${cardCount}`;
 
         card.className = 'card';
 
@@ -111,8 +143,9 @@ class BoardController {
         card.setAttribute('draggable', true);
 
         card.innerHTML =
-            `        
-        <i class="fa-regular fa-trash-can" id="delete-btn" style="display:none" ></i>
+
+            `
+        <i class= "fa-regular fa-trash-can" id = "delete-btn" style = "display:none" ></i >
 
         <i class="fa-solid fa-pen-to-square" id="edit-btn"  style="display:none" ></i>
 
@@ -136,25 +169,34 @@ class BoardController {
     }
 
 
-    onEnter(card, column) {
+    onEnter(card) {
 
-        console.log(card)
-
-        let textDescriptionArea = document.querySelector(`#${column.id} > #${card.id} > textarea[id^='text-description'] `);
-
-        console.log(textDescriptionArea) //here
+        let descriptionArea = card.querySelector(`textarea[id ^= 'text-description']`);
 
         card.addEventListener('keydown', event => {
 
             if (event.key === "Enter") {
-
-                console.log('enter!');
-                textDescriptionArea.focus();
-
+                descriptionArea.focus();
             };
 
         });
 
+    }
+
+
+    getNewPosition(column) {
+
+        let position;
+
+        if (column.length == 0) {
+            position = 0;
+        } else if (column.length == 1) {
+            position = 1;
+        }
+        else {
+            position = column.length;
+        }
+        return position;
     }
 
     saveNewTask(card, columnId, color) {
@@ -163,14 +205,30 @@ class BoardController {
 
         saveBtn.addEventListener('click', e => {
 
-            let titleArea = document.querySelector(`#${columnId} > #${card.id} > textarea[id^='text-title']`);
-            let descriptionArea = document.querySelector(`#${columnId} >  #${card.id} > textarea[id^='text-description'] `);
+            let titleArea = card.querySelector(` textarea[id ^= 'text-title']`);
+            let descriptionArea = card.querySelector(` textarea[id ^= 'text-description']`);
             let column = columnId.replace('column', '');
-            let position = card.id.replace('card', '');
+            let position;
 
             if (titleArea.value && descriptionArea.value) {
 
+                switch (column) {
+                    case '1':
+                        position = this.getNewPosition(this.firstColumn);
+                        break;
+                    case '2':
+                        position = this.getNewPosition(this.secondColumn);
+                        break;
+                    case '3':
+                        position = this.getNewPosition(this.thirdColumn);
+                        break;
+                    case '4':
+                        position = this.getNewPosition(this.fourthColumn);
+                        break;
+                }
+
                 let newCardObj = new Card(titleArea.value, descriptionArea.value, column, color, position);
+                this.pushToColumnArray(newCardObj);
 
                 newCardObj.save().then(dataCard => {
 
@@ -185,8 +243,6 @@ class BoardController {
                 });
 
                 this.showButtons(card);
-
-
 
             } else {
                 window.alert('Please, insert a title and a description for your task! ');
@@ -230,7 +286,7 @@ class BoardController {
 
                 cardObj.edit(titleArea.value, descriptionArea.value);
 
-                console.log(`Successfully edited! New Card:`, cardObj);
+                console.log(`Successfully edited! New Card: `, cardObj);
 
                 onEditBtn.style.display = 'none';
 
@@ -243,6 +299,8 @@ class BoardController {
 
     initDragEvent(card, cardObj) {
 
+        const initialColumn = card.parentNode;
+
         const dropzones = document.querySelectorAll('.column')
 
         card.addEventListener('dragstart', e => {
@@ -252,6 +310,9 @@ class BoardController {
             dropzones.forEach(dropzone => {
                 dropzone.classList.add('highlight');
             });
+
+
+
         });
 
         card.addEventListener('dragover', (e) => {
@@ -267,8 +328,64 @@ class BoardController {
 
             });
 
-            const column = card.parentNode;
-            this.changeColumn(card, column, cardObj);
+
+            switch (initialColumn.id) {
+
+                case 'column1':
+
+                    let index = this.firstColumn.indexOf(cardObj);
+
+                    if (index !== -1) {
+                        this.firstColumn.splice(index, 1);
+                    }
+
+                    this.firstColumn.forEach((card, cardindex) => {
+
+                        card.position = cardindex;
+                    });
+
+                    break;
+
+                case 'column2':
+
+                    let index2 = this.secondColumn.indexOf(cardObj);
+
+                    if (index2 !== -1) {
+                        this.secondColumn.splice(index2, 1);
+                    }
+
+                    this.secondColumn.forEach((card, cardindex) => {
+                        card.position = cardindex;
+                    });
+
+                    break;
+                case 'column3':
+                    break;
+                case 'column4':
+                    break;
+
+
+            }
+
+            const endColumn = card.parentNode;
+
+            switch (endColumn.id) {
+
+                case 'column1':
+                    this.changePosition(this.firstColumn, cardObj, endColumn);
+                    break;
+                case 'column2':
+                    this.changePosition(this.secondColumn, cardObj, endColumn);
+                    break;
+                case 'column3':
+                    this.changePosition(this.thirdColumn, cardObj, endColumn);
+                    break;
+                case 'column4':
+                    this.changePosition(this.fourthColumn, cardObj, endColumn);
+                    break;
+
+            }
+
 
         });
 
@@ -304,16 +421,32 @@ class BoardController {
 
     }
 
-    changeColumn(card, column, cardObj) {
-
-        var index = Array.prototype.indexOf.call(column.children, card);
-        //console.log(column.children)
+    changeColumn(column, cardObj) {
 
         let columnNumber = column.id.replace('column', '');
 
-        cardObj.changeColumn(columnNumber, index).then(
-            console.log('Card sucessfully moved to another column or position!')
+        cardObj.changeColumn(columnNumber, cardObj.position).then(
+            console.log('changed position: ', cardObj)
         );
+
+    }
+
+    changePosition(column, cardObj, endColumn) {
+
+        column.push(cardObj);
+
+        column.filter((item, index) => {
+
+            if (item === cardObj) {
+                cardObj.position = index;
+                this.changeColumn(endColumn, cardObj);
+            }
+
+        });
+
+        column.forEach(card => {
+            HttpRequest.put(`/cards/${card._id}`, card);
+        });
 
 
     }

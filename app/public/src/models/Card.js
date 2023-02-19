@@ -30,6 +30,10 @@ class Card {
         return this._position;
     }
 
+    set position(position) {
+        this._position = position;
+    }
+
 
     //converts json in the object instantiated 
     loadFromJSON(json) {
